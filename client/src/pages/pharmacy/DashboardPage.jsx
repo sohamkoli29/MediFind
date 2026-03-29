@@ -4,7 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Pill, LogOut, Sun, Moon, Plus, Edit2, Trash2,
   Package, AlertTriangle, TrendingUp, Store,
-  Loader2, Search, ChevronDown, X, Check
+  Loader2, Search, ChevronDown, X, Check,
+  Upload, FileText, AlertCircle, CheckCircle2,
+  Navigation
 } from 'lucide-react';
 import { logout } from '../../features/auth/authSlice';
 import api from '../../services/api';
@@ -51,7 +53,8 @@ const DashboardPage = () => {
   // Modal state
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showInventoryModal, setShowInventoryModal] = useState(false);
-  const [editingItem, setEditingItem] = useState(null); // null = add, object = edit
+  const [showCSVModal, setShowCSVModal] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
 
   // Live stock updates
   useSocket((data) => {
@@ -86,7 +89,6 @@ const DashboardPage = () => {
       await fetchInventory();
     } catch (err) {
       if (err.response?.status === 404) {
-        // No pharmacy registered yet
         setPharmacy(null);
       }
     } finally {
@@ -140,7 +142,7 @@ const DashboardPage = () => {
       <div className="min-h-screen p-8" style={{ backgroundColor: 'hsl(var(--background))' }}>
         <Skeleton height={60} className="mb-8" baseColor={skeletonBase} highlightColor={skeletonHigh} />
         <div className="grid grid-cols-4 gap-4 mb-8">
-          {[1,2,3,4].map(i => (
+          {[1, 2, 3, 4].map((i) => (
             <Skeleton key={i} height={100} borderRadius={16}
               baseColor={skeletonBase} highlightColor={skeletonHigh} />
           ))}
@@ -184,14 +186,18 @@ const DashboardPage = () => {
           <span className="hidden md:block text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
             {user?.name}
           </span>
-          <button onClick={toggleTheme}
+          <button
+            onClick={toggleTheme}
             className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: 'hsl(var(--secondary))' }}>
+            style={{ backgroundColor: 'hsl(var(--secondary))' }}
+          >
             {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
           </button>
-          <button onClick={handleLogout}
+          <button
+            onClick={handleLogout}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm"
-            style={{ backgroundColor: 'hsl(var(--secondary))', color: 'hsl(var(--muted-foreground))' }}>
+            style={{ backgroundColor: 'hsl(var(--secondary))', color: 'hsl(var(--muted-foreground))' }}
+          >
             <LogOut className="w-3.5 h-3.5" />
             <span className="hidden md:block">Logout</span>
           </button>
@@ -242,20 +248,39 @@ const DashboardPage = () => {
                   Manage your medicine stock in real-time
                 </p>
               </div>
-              <button
-                onClick={() => { setEditingItem(null); setShowInventoryModal(true); }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm"
-                style={{ backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
-              >
-                <Plus className="w-4 h-4" />
-                Add Medicine
-              </button>
+
+              {/* Action buttons */}
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => setShowCSVModal(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm"
+                  style={{
+                    backgroundColor: 'hsl(var(--secondary))',
+                    color: 'hsl(var(--foreground))',
+                    border: '1px solid hsl(var(--border))',
+                  }}
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Bulk Upload</span>
+                </button>
+                <button
+                  onClick={() => { setEditingItem(null); setShowInventoryModal(true); }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm"
+                  style={{
+                    backgroundColor: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                  }}
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Medicine</span>
+                </button>
+              </div>
             </motion.div>
 
             {/* ── Stats cards ── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               {[
-                { label: 'Total SKUs', value: totalSKUs, icon: Package, color: 'var(--primary)' },
+                { label: 'Total SKUs', value: totalSKUs, icon: Package, color: '161 94% 30%' },
                 { label: 'In Stock', value: inStockCount, icon: Check, color: '161 94% 30%' },
                 { label: 'Low Stock', value: lowStockCount, icon: AlertTriangle, color: '38 92% 50%' },
                 { label: 'Out of Stock', value: outOfStockCount, icon: TrendingUp, color: '0 84% 60%' },
@@ -301,10 +326,21 @@ const DashboardPage = () => {
               }}
             >
               {/* Table header */}
-              <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+              <div
+                className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                style={{ borderBottom: '1px solid hsl(var(--border))' }}
+              >
                 <h2 className="font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
                   Medicine Inventory
+                  {filteredInventory.length > 0 && (
+                    <span className="ml-2 text-xs font-normal px-2 py-0.5 rounded-full"
+                      style={{
+                        backgroundColor: 'hsl(var(--secondary))',
+                        color: 'hsl(var(--muted-foreground))',
+                      }}>
+                      {filteredInventory.length} items
+                    </span>
+                  )}
                 </h2>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5"
@@ -324,10 +360,10 @@ const DashboardPage = () => {
                 </div>
               </div>
 
-              {/* Loading */}
+              {/* Loading skeletons */}
               {inventoryLoading ? (
                 <div className="p-5 space-y-3">
-                  {[1,2,3].map(i => (
+                  {[1, 2, 3].map((i) => (
                     <Skeleton key={i} height={56} borderRadius={12}
                       baseColor={skeletonBase} highlightColor={skeletonHigh} />
                   ))}
@@ -351,12 +387,23 @@ const DashboardPage = () => {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  {/* Mobile scroll hint */}
+                  <div className="flex items-center gap-1.5 px-5 py-2 md:hidden"
+                    style={{
+                      borderBottom: '1px solid hsl(var(--border))',
+                      color: 'hsl(var(--muted-foreground))',
+                    }}>
+                    <span className="text-xs">Scroll horizontally to see all columns</span>
+                  </div>
+                  <table className="w-full text-sm min-w-[640px]">
                     <thead>
                       <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
                         {['Medicine', 'Category', 'Quantity', 'Price', 'Status', 'Actions'].map((h) => (
-                          <th key={h} className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide"
-                            style={{ color: 'hsl(var(--muted-foreground))' }}>
+                          <th
+                            key={h}
+                            className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide"
+                            style={{ color: 'hsl(var(--muted-foreground))' }}
+                          >
                             {h}
                           </th>
                         ))}
@@ -383,18 +430,21 @@ const DashboardPage = () => {
         )}
       </div>
 
-      {/* ── Register Pharmacy Modal ── */}
+      {/* ── Modals ── */}
       <AnimatePresence>
         {showRegisterModal && (
           <RegisterPharmacyModal
             onClose={() => setShowRegisterModal(false)}
-            onSuccess={(p) => { setPharmacy(p); setShowRegisterModal(false); }}
+            onSuccess={(p) => {
+              setPharmacy(p);
+              setShowRegisterModal(false);
+              fetchInventory();
+            }}
             theme={theme}
           />
         )}
       </AnimatePresence>
 
-      {/* ── Add/Edit Inventory Modal ── */}
       <AnimatePresence>
         {showInventoryModal && (
           <InventoryModal
@@ -410,6 +460,18 @@ const DashboardPage = () => {
               setEditingItem(null);
             }}
             theme={theme}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showCSVModal && (
+          <CSVUploadModal
+            onClose={() => setShowCSVModal(false)}
+            onSuccess={() => {
+              setShowCSVModal(false);
+              fetchInventory();
+            }}
           />
         )}
       </AnimatePresence>
@@ -530,6 +592,20 @@ const InventoryRow = ({ item, index, onEdit, onDelete }) => {
   );
 };
 
+// ── Modal Overlay ─────────────────────────────────────────────────────────────
+const ModalOverlay = ({ children, onClose }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    onClick={onClose}
+    className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
+  >
+    {children}
+  </motion.div>
+);
+
 // ── Register Pharmacy Modal ───────────────────────────────────────────────────
 const RegisterPharmacyModal = ({ onClose, onSuccess, theme }) => {
   const [loading, setLoading] = useState(false);
@@ -626,9 +702,11 @@ const RegisterPharmacyModal = ({ onClose, onSuccess, theme }) => {
               Set up your pharmacy profile
             </p>
           </div>
-          <button onClick={onClose}
+          <button
+            onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: 'hsl(var(--secondary))' }}>
+            style={{ backgroundColor: 'hsl(var(--secondary))' }}
+          >
             <X className="w-4 h-4" style={{ color: 'hsl(var(--muted-foreground))' }} />
           </button>
         </div>
@@ -640,7 +718,8 @@ const RegisterPharmacyModal = ({ onClose, onSuccess, theme }) => {
               style={{ color: 'hsl(var(--foreground))' }}>
               Pharmacy Name
             </label>
-            <input name="name" value={form.name} onChange={handleChange} required
+            <input
+              name="name" value={form.name} onChange={handleChange} required
               placeholder="Apollo Pharmacy"
               className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
               style={inputStyle}
@@ -656,7 +735,8 @@ const RegisterPharmacyModal = ({ onClose, onSuccess, theme }) => {
                 style={{ color: 'hsl(var(--foreground))' }}>
                 Licence Number
               </label>
-              <input name="licenceNumber" value={form.licenceNumber} onChange={handleChange} required
+              <input
+                name="licenceNumber" value={form.licenceNumber} onChange={handleChange} required
                 placeholder="MH-2024-001"
                 className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                 style={inputStyle}
@@ -669,7 +749,8 @@ const RegisterPharmacyModal = ({ onClose, onSuccess, theme }) => {
                 style={{ color: 'hsl(var(--foreground))' }}>
                 Phone
               </label>
-              <input name="phone" value={form.phone} onChange={handleChange} required
+              <input
+                name="phone" value={form.phone} onChange={handleChange} required
                 placeholder="9876543210"
                 className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                 style={inputStyle}
@@ -679,13 +760,14 @@ const RegisterPharmacyModal = ({ onClose, onSuccess, theme }) => {
             </div>
           </div>
 
-          {/* Address */}
+          {/* Street */}
           <div>
             <label className="block text-sm font-medium mb-1.5"
               style={{ color: 'hsl(var(--foreground))' }}>
               Street Address
             </label>
-            <input name="street" value={form.street} onChange={handleChange}
+            <input
+              name="street" value={form.street} onChange={handleChange}
               placeholder="College Road"
               className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
               style={inputStyle}
@@ -694,6 +776,7 @@ const RegisterPharmacyModal = ({ onClose, onSuccess, theme }) => {
             />
           </div>
 
+          {/* City, State, Pincode */}
           <div className="grid grid-cols-3 gap-3">
             {[
               { name: 'city', placeholder: 'Nashik' },
@@ -705,7 +788,8 @@ const RegisterPharmacyModal = ({ onClose, onSuccess, theme }) => {
                   style={{ color: 'hsl(var(--foreground))' }}>
                   {f.name}
                 </label>
-                <input name={f.name} value={form[f.name]} onChange={handleChange}
+                <input
+                  name={f.name} value={form[f.name]} onChange={handleChange}
                   placeholder={f.placeholder}
                   className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                   style={inputStyle}
@@ -716,7 +800,7 @@ const RegisterPharmacyModal = ({ onClose, onSuccess, theme }) => {
             ))}
           </div>
 
-          {/* Hours */}
+          {/* Operating hours */}
           <div className="grid grid-cols-2 gap-3">
             {[
               { name: 'open', label: 'Opening Time' },
@@ -727,7 +811,8 @@ const RegisterPharmacyModal = ({ onClose, onSuccess, theme }) => {
                   style={{ color: 'hsl(var(--foreground))' }}>
                   {f.label}
                 </label>
-                <input type="time" name={f.name} value={form[f.name]} onChange={handleChange}
+                <input
+                  type="time" name={f.name} value={form[f.name]} onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                   style={inputStyle}
                   onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
@@ -762,12 +847,12 @@ const RegisterPharmacyModal = ({ onClose, onSuccess, theme }) => {
                 ? <Loader2 className="w-4 h-4 animate-spin" />
                 : form.coordinates
                 ? <Check className="w-4 h-4" />
-                : <Store className="w-4 h-4" />
+                : <Navigation className="w-4 h-4" />
               }
               {locationLoading
                 ? 'Detecting...'
                 : form.coordinates
-                ? `Location pinned (${form.coordinates[1].toFixed(4)}, ${form.coordinates[0].toFixed(4)})`
+                ? `Pinned: ${form.coordinates[1].toFixed(4)}, ${form.coordinates[0].toFixed(4)}`
                 : 'Pin my current location'
               }
             </button>
@@ -876,12 +961,17 @@ const InventoryModal = ({ editingItem, onClose, onSuccess, theme }) => {
               {isEdit ? 'Edit Medicine' : 'Add Medicine'}
             </h2>
             <p className="text-sm mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              {isEdit ? `Editing ${editingItem.medicineName}` : 'Add a new medicine to your inventory'}
+              {isEdit
+                ? `Editing ${editingItem.medicineName}`
+                : 'Add a new medicine to your inventory'
+              }
             </p>
           </div>
-          <button onClick={onClose}
+          <button
+            onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: 'hsl(var(--secondary))' }}>
+            style={{ backgroundColor: 'hsl(var(--secondary))' }}
+          >
             <X className="w-4 h-4" style={{ color: 'hsl(var(--muted-foreground))' }} />
           </button>
         </div>
@@ -894,7 +984,8 @@ const InventoryModal = ({ editingItem, onClose, onSuccess, theme }) => {
               style={{ color: 'hsl(var(--foreground))' }}>
               Medicine Name *
             </label>
-            <input name="medicineName" value={form.medicineName} onChange={handleChange}
+            <input
+              name="medicineName" value={form.medicineName} onChange={handleChange}
               required disabled={isEdit}
               placeholder="Paracetamol"
               className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
@@ -913,7 +1004,8 @@ const InventoryModal = ({ editingItem, onClose, onSuccess, theme }) => {
                 (comma separated)
               </span>
             </label>
-            <input name="brandNames" value={form.brandNames} onChange={handleChange}
+            <input
+              name="brandNames" value={form.brandNames} onChange={handleChange}
               placeholder="Crocin, Calpol, Dolo"
               className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
               style={inputStyle}
@@ -928,7 +1020,8 @@ const InventoryModal = ({ editingItem, onClose, onSuccess, theme }) => {
               style={{ color: 'hsl(var(--foreground))' }}>
               Salt Composition
             </label>
-            <input name="saltComposition" value={form.saltComposition} onChange={handleChange}
+            <input
+              name="saltComposition" value={form.saltComposition} onChange={handleChange}
               placeholder="Paracetamol 500mg"
               className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
               style={inputStyle}
@@ -944,7 +1037,8 @@ const InventoryModal = ({ editingItem, onClose, onSuccess, theme }) => {
               Category
             </label>
             <div className="relative">
-              <select name="category" value={form.category} onChange={handleChange}
+              <select
+                name="category" value={form.category} onChange={handleChange}
                 className="w-full px-4 py-2.5 rounded-xl text-sm outline-none appearance-none capitalize"
                 style={inputStyle}
               >
@@ -964,7 +1058,8 @@ const InventoryModal = ({ editingItem, onClose, onSuccess, theme }) => {
                 style={{ color: 'hsl(var(--foreground))' }}>
                 Quantity *
               </label>
-              <input type="number" name="quantity" value={form.quantity} onChange={handleChange}
+              <input
+                type="number" name="quantity" value={form.quantity} onChange={handleChange}
                 required min="0" placeholder="50"
                 className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                 style={inputStyle}
@@ -978,8 +1073,9 @@ const InventoryModal = ({ editingItem, onClose, onSuccess, theme }) => {
                 Unit
               </label>
               <div className="relative">
-                <select name="unit" value={form.unit} onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none appearance-none capitalize"
+                <select
+                  name="unit" value={form.unit} onChange={handleChange}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none appearance-none"
                   style={inputStyle}
                 >
                   {UNITS.map((u) => (
@@ -992,14 +1088,15 @@ const InventoryModal = ({ editingItem, onClose, onSuccess, theme }) => {
             </div>
           </div>
 
-          {/* Price + Low stock threshold */}
+          {/* Price + Low stock */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium mb-1.5"
                 style={{ color: 'hsl(var(--foreground))' }}>
                 Price (&#8377;)
               </label>
-              <input type="number" name="price" value={form.price} onChange={handleChange}
+              <input
+                type="number" name="price" value={form.price} onChange={handleChange}
                 min="0" placeholder="25"
                 className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                 style={inputStyle}
@@ -1012,7 +1109,8 @@ const InventoryModal = ({ editingItem, onClose, onSuccess, theme }) => {
                 style={{ color: 'hsl(var(--foreground))' }}>
                 Low Stock Alert
               </label>
-              <input type="number" name="lowStockThreshold" value={form.lowStockThreshold}
+              <input
+                type="number" name="lowStockThreshold" value={form.lowStockThreshold}
                 onChange={handleChange} min="1" placeholder="10"
                 className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                 style={inputStyle}
@@ -1046,18 +1144,223 @@ const InventoryModal = ({ editingItem, onClose, onSuccess, theme }) => {
   );
 };
 
-// ── Modal Overlay ─────────────────────────────────────────────────────────────
-const ModalOverlay = ({ children, onClose }) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    onClick={onClose}
-    className="fixed inset-0 z-50 flex items-center justify-center p-4"
-    style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
-  >
-    {children}
-  </motion.div>
-);
+// ── CSV Upload Modal ──────────────────────────────────────────────────────────
+const CSVUploadModal = ({ onClose, onSuccess }) => {
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+
+  const handleFile = (f) => {
+    if (f && f.name.endsWith('.csv')) {
+      setFile(f);
+      setResult(null);
+    } else {
+      toast.error('Please upload a .csv file');
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    handleFile(e.dataTransfer.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!file) return;
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('csv', file);
+      const { data } = await api.post('/inventory/bulk', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setResult(data.results);
+      toast.success(`Done! ${data.results.added} added, ${data.results.updated} updated`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ModalOverlay onClose={onClose}>
+      <motion.div
+        variants={modalVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        className="w-full max-w-md rounded-2xl overflow-hidden"
+        style={{
+          backgroundColor: 'hsl(var(--card))',
+          border: '1px solid hsl(var(--border))',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-6"
+          style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+          <div>
+            <h2 className="font-bold text-lg" style={{ color: 'hsl(var(--foreground))' }}>
+              Bulk Upload Inventory
+            </h2>
+            <p className="text-sm mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              Upload a CSV to add or update multiple medicines
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'hsl(var(--secondary))' }}
+          >
+            <X className="w-4 h-4" style={{ color: 'hsl(var(--muted-foreground))' }} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {/* Format hint */}
+          <div
+            className="p-3 rounded-xl text-xs font-mono"
+            style={{
+              backgroundColor: 'hsl(var(--secondary))',
+              color: 'hsl(var(--muted-foreground))',
+            }}
+          >
+            <p className="font-semibold mb-1 font-sans" style={{ color: 'hsl(var(--foreground))' }}>
+              Required columns:
+            </p>
+            medicineName, quantity
+            <p className="font-semibold mt-2 mb-1 font-sans" style={{ color: 'hsl(var(--foreground))' }}>
+              Optional columns:
+            </p>
+            brandNames (use | to separate), saltComposition,
+            category, price, unit, lowStockThreshold
+          </div>
+
+          {/* Drop zone */}
+          <div
+            onDrop={handleDrop}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onClick={() => document.getElementById('csv-input').click()}
+            className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all"
+            style={{
+              borderColor: dragOver
+                ? 'hsl(var(--primary))'
+                : file
+                ? 'hsl(var(--primary) / 0.5)'
+                : 'hsl(var(--border))',
+              backgroundColor: dragOver ? 'hsl(var(--primary) / 0.05)' : 'transparent',
+            }}
+          >
+            <input
+              id="csv-input"
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={(e) => handleFile(e.target.files[0])}
+            />
+            {file ? (
+              <div className="flex flex-col items-center gap-2">
+                <FileText className="w-8 h-8" style={{ color: 'hsl(var(--primary))' }} />
+                <p className="font-semibold text-sm" style={{ color: 'hsl(var(--foreground))' }}>
+                  {file.name}
+                </p>
+                <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                  {(file.size / 1024).toFixed(1)} KB — click to change
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <Upload className="w-8 h-8" style={{ color: 'hsl(var(--muted-foreground))' }} />
+                <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+                  Drop your CSV here
+                </p>
+                <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                  or click to browse
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Upload results */}
+          {result && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-xl p-4 space-y-2"
+              style={{
+                backgroundColor: 'hsl(var(--secondary))',
+                border: '1px solid hsl(var(--border))',
+              }}
+            >
+              <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                Upload Summary
+              </p>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                {[
+                  { label: 'Added', value: result.added, color: 'hsl(var(--primary))' },
+                  { label: 'Updated', value: result.updated, color: 'hsl(38 92% 50%)' },
+                  { label: 'Skipped', value: result.skipped, color: 'hsl(0 84% 60%)' },
+                ].map((s) => (
+                  <div key={s.label} className="p-2 rounded-lg"
+                    style={{ backgroundColor: 'hsl(var(--card))' }}>
+                    <p className="text-xl font-bold" style={{ color: s.color }}>{s.value}</p>
+                    <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>{s.label}</p>
+                  </div>
+                ))}
+              </div>
+              {result.errors?.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {result.errors.map((e, i) => (
+                    <div key={i} className="flex items-start gap-2 text-xs"
+                      style={{ color: 'hsl(0 84% 60%)' }}>
+                      <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
+                      {e}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Action button */}
+          <div className="flex gap-3">
+            {result ? (
+              <button
+                onClick={onSuccess}
+                className="flex-1 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: 'hsl(var(--primary))',
+                  color: 'hsl(var(--primary-foreground))',
+                }}
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Done - Refresh Inventory
+              </button>
+            ) : (
+              <button
+                onClick={handleUpload}
+                disabled={!file || loading}
+                className="flex-1 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: 'hsl(var(--primary))',
+                  color: 'hsl(var(--primary-foreground))',
+                  opacity: !file || loading ? 0.6 : 1,
+                }}
+              >
+                {loading
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading...</>
+                  : <><Upload className="w-4 h-4" /> Upload CSV</>
+                }
+              </button>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </ModalOverlay>
+  );
+};
 
 export default DashboardPage;

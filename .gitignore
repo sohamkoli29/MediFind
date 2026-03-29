@@ -62,3 +62,5 @@ server/uploads/
 # Cache
 # ======================
 .cache/
+
+test_inventory.csv
