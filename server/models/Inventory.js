@@ -7,10 +7,24 @@ const inventorySchema = new mongoose.Schema(
       ref: 'Pharmacy',
       required: true,
     },
-    medicine: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Medicine',
-      required: true,
+    medicineName: {
+      type: String,
+      required: [true, 'Medicine name is required'],
+      trim: true,
+    },
+    brandNames: [{ type: String, trim: true }],
+    saltComposition: {
+      type: String,
+      trim: true,
+    },
+    category: {
+      type: String,
+      enum: [
+        'antibiotic', 'analgesic', 'antiviral',
+        'antifungal', 'cardiovascular', 'diabetes',
+        'respiratory', 'vitamin', 'other'
+      ],
+      default: 'other',
     },
     quantity: {
       type: Number,
@@ -33,7 +47,7 @@ const inventorySchema = new mongoose.Schema(
     },
     lowStockThreshold: {
       type: Number,
-      default: 10,             // alert pharmacy when quantity drops below this
+      default: 10,
     },
     lastUpdated: {
       type: Date,
@@ -43,14 +57,17 @@ const inventorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Compound index — one medicine per pharmacy only
-inventorySchema.index({ pharmacy: 1, medicine: 1 }, { unique: true });
+// Text index for patient search
+inventorySchema.index({
+  medicineName: 'text',
+  brandNames: 'text',
+  saltComposition: 'text',
+});
 
-// Auto-set inStock based on quantity before every save
-inventorySchema.pre('save', function (next) {
+// Auto-set inStock from quantity
+inventorySchema.pre('save', function () {
   this.inStock = this.quantity > 0;
   this.lastUpdated = Date.now();
-  next();
 });
 
 const Inventory = mongoose.model('Inventory', inventorySchema);

@@ -24,7 +24,6 @@ const pharmacySchema = new mongoose.Schema(
       state: String,
       pincode: String,
     },
-    // GeoJSON Point — enables $near geospatial queries
     location: {
       type: {
         type: String,
@@ -33,7 +32,7 @@ const pharmacySchema = new mongoose.Schema(
         default: 'Point',
       },
       coordinates: {
-        type: [Number],   // [longitude, latitude]
+        type: [Number], // [longitude, latitude]
         required: true,
       },
     },
@@ -44,15 +43,10 @@ const pharmacySchema = new mongoose.Schema(
     operatingHours: {
       open: { type: String, default: '09:00' },
       close: { type: String, default: '21:00' },
-      closedOn: [{ type: String }],   // e.g. ['Sunday']
-    },
-    verificationStatus: {
-      type: String,
-      enum: ['pending', 'verified', 'rejected'],
-      default: 'pending',
+      closedOn: [{ type: String }],
     },
     profileImage: {
-      type: String,   // Cloudinary URL
+      type: String,
     },
     isActive: {
       type: Boolean,
@@ -62,7 +56,6 @@ const pharmacySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 2dsphere index — required for MongoDB geospatial queries
 pharmacySchema.index({ location: '2dsphere' });
 
 const Pharmacy = mongoose.model('Pharmacy', pharmacySchema);

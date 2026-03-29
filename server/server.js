@@ -5,6 +5,10 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
+import medicineRoutes from './routes/medicineRoutes.js';
+import pharmacyRoutes from './routes/pharmacyRoutes.js';
+import inventoryRoutes from './routes/inventoryRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -33,7 +37,10 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
-
+app.use('/api/medicines', medicineRoutes);
+app.use('/api/pharmacies', pharmacyRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/admin', adminRoutes);
 // Health check
 app.get('/', (req, res) => res.json({ message: 'MediFind API running' }));
 // Global error handler

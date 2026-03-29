@@ -22,10 +22,10 @@ const userSchema = new mongoose.Schema(
       select: false,       // never returned in queries by default
     },
     role: {
-      type: String,
-      enum: ['patient', 'pharmacy_staff', 'admin'],
-      default: 'patient',
-    },
+  type: String,
+  enum: ['patient', 'pharmacy_staff'],
+  default: 'patient',
+},
     phone: {
       type: String,
       trim: true,
