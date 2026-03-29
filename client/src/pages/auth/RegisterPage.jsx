@@ -56,11 +56,10 @@ const RegisterPage = () => {
     dispatch(clearError());
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(registerUser(form));
   };
@@ -72,23 +71,23 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen min-h-dvh flex flex-col lg:flex-row">
       {/* ── Left Panel ── */}
       <motion.div
         initial={{ opacity: 0, x: -40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between p-12"
+        className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between p-10 xl:p-14"
         style={{ background: 'hsl(161 94% 18%)' }}
       >
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
               className="absolute rounded-full border border-white"
               style={{
-                width: `${(i + 1) * 120}px`,
-                height: `${(i + 1) * 120}px`,
+                width: `${(i + 1) * 130}px`,
+                height: `${(i + 1) * 130}px`,
                 top: '50%', left: '50%',
                 transform: 'translate(-50%, -50%)',
               }}
@@ -108,7 +107,7 @@ const RegisterPage = () => {
             Join the platform
           </p>
           <h1
-            className="text-white text-5xl leading-tight mb-6"
+            className="text-white text-4xl xl:text-5xl leading-tight mb-6"
             style={{ fontFamily: "'DM Serif Display', serif" }}
           >
             Medicine,
@@ -120,61 +119,74 @@ const RegisterPage = () => {
           </p>
         </div>
 
-        <div className="relative z-10 p-6 rounded-2xl" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+        <div
+          className="relative z-10 p-6 rounded-2xl"
+          style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+        >
           <p className="text-white/60 text-xs uppercase tracking-wider mb-3">How it works</p>
-          {['Register your account', 'Set up your profile', 'Start finding or listing medicines'].map((step, i) => (
-            <div key={step} className="flex items-center gap-3 mb-2 last:mb-0">
-              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                <span className="text-white text-xs font-bold">{i + 1}</span>
+          {['Register your account', 'Set up your profile', 'Start finding or listing medicines'].map(
+            (step, i) => (
+              <div key={step} className="flex items-center gap-3 mb-2 last:mb-0">
+                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                  <span className="text-white text-xs font-bold">{i + 1}</span>
+                </div>
+                <p className="text-white/80 text-sm">{step}</p>
               </div>
-              <p className="text-white/80 text-sm">{step}</p>
-            </div>
-          ))}
+            )
+          )}
         </div>
       </motion.div>
 
       {/* ── Right Panel ── */}
-      <div className="flex-1 flex flex-col" style={{ backgroundColor: 'hsl(var(--background))' }}>
+      <div
+        className="flex-1 flex flex-col"
+        style={{ backgroundColor: 'hsl(var(--background))' }}
+      >
         {/* Top bar */}
-        <div className="flex justify-between items-center p-6">
+        <div className="flex justify-between items-center px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex lg:hidden items-center gap-2">
-            <Pill className="w-5 h-5" style={{ color: 'hsl(var(--primary))' }} />
-            <span className="font-bold text-lg">MediFind</span>
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: 'hsl(var(--primary))' }}
+            >
+              <Pill className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-base">MediFind</span>
           </div>
           <div className="hidden lg:block" />
           <button
             onClick={toggleTheme}
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-full flex items-center justify-center transition-colors nav-btn"
             style={{ backgroundColor: 'hsl(var(--secondary))' }}
+            aria-label="Toggle theme"
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
         </div>
 
         {/* Form */}
-        <div className="flex-1 flex items-center justify-center px-6 py-8">
-          <div className="w-full max-w-md">
+        <div className="flex-1 flex items-start sm:items-center justify-center px-4 py-6 sm:px-8">
+          <div className="w-full max-w-sm sm:max-w-md">
 
-            <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible" className="mb-8">
+            <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible" className="mb-6 sm:mb-8">
               <h2
-                className="text-3xl mb-2"
+                className="text-2xl sm:text-3xl mb-2"
                 style={{ fontFamily: "'DM Serif Display', serif", color: 'hsl(var(--foreground))' }}
               >
                 Create account
               </h2>
-              <p style={{ color: 'hsl(var(--muted-foreground))' }}>
+              <p className="text-sm sm:text-base" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Get started with MediFind today
               </p>
             </motion.div>
 
-            {/* Error */}
             <AnimatePresence>
               {error && (
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="flex items-center gap-3 p-4 rounded-xl mb-6 text-sm"
+                  className="flex items-center gap-3 p-4 rounded-xl mb-5 text-sm"
                   style={{
                     backgroundColor: 'hsl(var(--destructive) / 0.1)',
                     color: 'hsl(var(--destructive))',
@@ -187,14 +199,17 @@ const RegisterPage = () => {
               )}
             </AnimatePresence>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
 
               {/* Role selector */}
               <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible">
-                <label className="block text-sm font-medium mb-3" style={{ color: 'hsl(var(--foreground))' }}>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: 'hsl(var(--foreground))' }}
+                >
                   I am a
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   {roles.map(({ value, label, description, icon: Icon }) => {
                     const selected = form.role === value;
                     return (
@@ -202,7 +217,7 @@ const RegisterPage = () => {
                         key={value}
                         type="button"
                         onClick={() => setForm((p) => ({ ...p, role: value }))}
-                        className="p-4 rounded-xl text-left transition-all"
+                        className="p-3 sm:p-4 rounded-xl text-left transition-all"
                         style={{
                           border: selected
                             ? '2px solid hsl(var(--primary))'
@@ -210,19 +225,31 @@ const RegisterPage = () => {
                           backgroundColor: selected
                             ? 'hsl(var(--primary) / 0.08)'
                             : 'hsl(var(--secondary))',
+                          minHeight: '80px',
                         }}
                       >
                         <Icon
-                          className="w-5 h-5 mb-2"
-                          style={{ color: selected ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))' }}
+                          className="w-4 h-4 mb-1.5 sm:w-5 sm:h-5 sm:mb-2"
+                          style={{
+                            color: selected
+                              ? 'hsl(var(--primary))'
+                              : 'hsl(var(--muted-foreground))',
+                          }}
                         />
                         <p
-                          className="font-semibold text-sm"
-                          style={{ color: selected ? 'hsl(var(--primary))' : 'hsl(var(--foreground))' }}
+                          className="font-semibold text-xs sm:text-sm"
+                          style={{
+                            color: selected
+                              ? 'hsl(var(--primary))'
+                              : 'hsl(var(--foreground))',
+                          }}
                         >
                           {label}
                         </p>
-                        <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                        <p
+                          className="text-xs mt-0.5 leading-tight"
+                          style={{ color: 'hsl(var(--muted-foreground))' }}
+                        >
                           {description}
                         </p>
                       </button>
@@ -233,7 +260,10 @@ const RegisterPage = () => {
 
               {/* Full name */}
               <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible">
-                <label className="block text-sm font-medium mb-2" style={{ color: 'hsl(var(--foreground))' }}>
+                <label
+                  className="block text-sm font-medium mb-1.5"
+                  style={{ color: 'hsl(var(--foreground))' }}
+                >
                   Full name
                 </label>
                 <input
@@ -243,16 +273,20 @@ const RegisterPage = () => {
                   onChange={handleChange}
                   required
                   placeholder="Soham Koli"
+                  autoComplete="name"
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
                   style={inputStyle}
-                  onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
-                  onBlur={(e) => e.target.style.borderColor = 'hsl(var(--border))'}
+                  onFocus={(e) => (e.target.style.borderColor = 'hsl(var(--primary))')}
+                  onBlur={(e) => (e.target.style.borderColor = 'hsl(var(--border))')}
                 />
               </motion.div>
 
               {/* Email */}
               <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible">
-                <label className="block text-sm font-medium mb-2" style={{ color: 'hsl(var(--foreground))' }}>
+                <label
+                  className="block text-sm font-medium mb-1.5"
+                  style={{ color: 'hsl(var(--foreground))' }}
+                >
                   Email address
                 </label>
                 <input
@@ -262,17 +296,22 @@ const RegisterPage = () => {
                   onChange={handleChange}
                   required
                   placeholder="you@example.com"
+                  autoComplete="email"
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
                   style={inputStyle}
-                  onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
-                  onBlur={(e) => e.target.style.borderColor = 'hsl(var(--border))'}
+                  onFocus={(e) => (e.target.style.borderColor = 'hsl(var(--primary))')}
+                  onBlur={(e) => (e.target.style.borderColor = 'hsl(var(--border))')}
                 />
               </motion.div>
 
               {/* Phone */}
               <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible">
-                <label className="block text-sm font-medium mb-2" style={{ color: 'hsl(var(--foreground))' }}>
-                  Phone number <span style={{ color: 'hsl(var(--muted-foreground))' }}>(optional)</span>
+                <label
+                  className="block text-sm font-medium mb-1.5"
+                  style={{ color: 'hsl(var(--foreground))' }}
+                >
+                  Phone number{' '}
+                  <span style={{ color: 'hsl(var(--muted-foreground))' }}>(optional)</span>
                 </label>
                 <input
                   type="tel"
@@ -280,16 +319,20 @@ const RegisterPage = () => {
                   value={form.phone}
                   onChange={handleChange}
                   placeholder="9876543210"
+                  autoComplete="tel"
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
                   style={inputStyle}
-                  onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
-                  onBlur={(e) => e.target.style.borderColor = 'hsl(var(--border))'}
+                  onFocus={(e) => (e.target.style.borderColor = 'hsl(var(--primary))')}
+                  onBlur={(e) => (e.target.style.borderColor = 'hsl(var(--border))')}
                 />
               </motion.div>
 
               {/* Password */}
               <motion.div custom={5} variants={fadeUp} initial="hidden" animate="visible">
-                <label className="block text-sm font-medium mb-2" style={{ color: 'hsl(var(--foreground))' }}>
+                <label
+                  className="block text-sm font-medium mb-1.5"
+                  style={{ color: 'hsl(var(--foreground))' }}
+                >
                   Password
                 </label>
                 <div className="relative">
@@ -301,16 +344,18 @@ const RegisterPage = () => {
                     required
                     minLength={6}
                     placeholder="Min. 6 characters"
+                    autoComplete="new-password"
                     className="w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all"
                     style={inputStyle}
-                    onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
-                    onBlur={(e) => e.target.style.borderColor = 'hsl(var(--border))'}
+                    onFocus={(e) => (e.target.style.borderColor = 'hsl(var(--primary))')}
+                    onBlur={(e) => (e.target.style.borderColor = 'hsl(var(--border))')}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center nav-btn"
                     style={{ color: 'hsl(var(--muted-foreground))' }}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -322,11 +367,12 @@ const RegisterPage = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 rounded-xl text-sm font-semibold transition-all mt-2"
+                  className="w-full py-3 rounded-xl text-sm font-semibold transition-all mt-1"
                   style={{
                     backgroundColor: 'hsl(var(--primary))',
                     color: 'hsl(var(--primary-foreground))',
                     opacity: loading ? 0.7 : 1,
+                    minHeight: '48px',
                   }}
                 >
                   {loading ? (
@@ -337,14 +383,16 @@ const RegisterPage = () => {
                       </svg>
                       Creating account...
                     </span>
-                  ) : 'Create account'}
+                  ) : (
+                    'Create account'
+                  )}
                 </button>
               </motion.div>
             </form>
 
             <motion.p
               custom={7} variants={fadeUp} initial="hidden" animate="visible"
-              className="text-center text-sm mt-6"
+              className="text-center text-sm mt-5"
               style={{ color: 'hsl(var(--muted-foreground))' }}
             >
               Already have an account?{' '}

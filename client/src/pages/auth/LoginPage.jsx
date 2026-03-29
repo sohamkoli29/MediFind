@@ -24,7 +24,6 @@ const LoginPage = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       if (user.role === 'pharmacy_staff') navigate('/pharmacy');
@@ -36,100 +35,102 @@ const LoginPage = () => {
     dispatch(clearError());
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(loginUser(form));
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* ── Left Panel — Branding ── */}
+    <div className="min-h-screen min-h-dvh flex flex-col lg:flex-row">
+      {/* ── Left Panel — Branding (hidden on mobile) ── */}
       <motion.div
         initial={{ opacity: 0, x: -40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
+        className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between p-10 xl:p-14"
         style={{ background: 'hsl(161 94% 18%)' }}
       >
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-10">
+        {/* Concentric rings */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
               className="absolute rounded-full border border-white"
               style={{
-                width: `${(i + 1) * 120}px`,
-                height: `${(i + 1) * 120}px`,
-                top: '50%',
-                left: '50%',
+                width: `${(i + 1) * 130}px`,
+                height: `${(i + 1) * 130}px`,
+                top: '50%', left: '50%',
                 transform: 'translate(-50%, -50%)',
               }}
             />
           ))}
         </div>
 
-        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-              <Pill className="w-5 h-5 text-white" />
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+            <Pill className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-white font-bold text-xl tracking-tight">MediFind</span>
+        </div>
+
+        <div className="relative z-10">
+          <p className="text-white/60 text-sm uppercase tracking-widest mb-4 font-medium">
+            Medicine Availability Finder
+          </p>
+          <h1
+            className="text-white text-4xl xl:text-5xl leading-tight mb-6"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            Find medicine.
+            <br />
+            <span className="text-white/60">Not excuses.</span>
+          </h1>
+          <p className="text-white/70 text-lg leading-relaxed max-w-sm">
+            Real-time stock visibility across pharmacies near you — no delivery, just accurate, fast information.
+          </p>
+        </div>
+
+        <div className="relative z-10 grid grid-cols-3 gap-6">
+          {[
+            { value: 'Live', label: 'Stock Updates' },
+            { value: '25km', label: 'Search Radius' },
+            { value: '2', label: 'Portals' },
+          ].map((stat) => (
+            <div key={stat.label}>
+              <p className="text-white text-2xl font-bold">{stat.value}</p>
+              <p className="text-white/50 text-sm mt-1">{stat.label}</p>
             </div>
-            <span className="text-white font-bold text-xl tracking-tight">MediFind</span>
-          </div>
-
-          {/* Hero text */}
-          <div>
-            <p className="text-white/60 text-sm uppercase tracking-widest mb-4 font-medium">
-              Medicine Availability Finder
-            </p>
-            <h1
-              className="text-white text-5xl leading-tight mb-6"
-              style={{ fontFamily: "'DM Serif Display', serif" }}
-            >
-              Find medicine.
-              <br />
-              <span className="text-white/60">Not excuses.</span>
-            </h1>
-            <p className="text-white/70 text-lg leading-relaxed max-w-sm">
-              Real-time stock visibility across pharmacies near you — no delivery, just accurate, fast information.
-            </p>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-6">
-            {[
-              { value: 'Live', label: 'Stock Updates' },
-              { value: '25km', label: 'Search Radius' },
-              { value: '2', label: 'Portals' },
-            ].map((stat) => (
-              <div key={stat.label}>
-                <p className="text-white text-2xl font-bold">{stat.value}</p>
-                <p className="text-white/50 text-sm mt-1">{stat.label}</p>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
       </motion.div>
 
       {/* ── Right Panel — Form ── */}
-      <div className="flex-1 flex flex-col" style={{ backgroundColor: 'hsl(var(--background))' }}>
+      <div
+        className="flex-1 flex flex-col"
+        style={{ backgroundColor: 'hsl(var(--background))' }}
+      >
         {/* Top bar */}
-        <div className="flex justify-between items-center p-6">
+        <div className="flex justify-between items-center px-4 py-3 sm:px-6 sm:py-4">
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-2">
-            <Pill className="w-5 h-5" style={{ color: 'hsl(var(--primary))' }} />
-            <span className="font-bold text-lg">MediFind</span>
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: 'hsl(var(--primary))' }}
+            >
+              <Pill className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-base">MediFind</span>
           </div>
           <div className="hidden lg:block" />
 
           <button
             onClick={toggleTheme}
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-full flex items-center justify-center transition-colors nav-btn"
             style={{ backgroundColor: 'hsl(var(--secondary))' }}
+            aria-label="Toggle theme"
           >
             {theme === 'dark'
               ? <Sun className="w-4 h-4" />
@@ -139,26 +140,24 @@ const LoginPage = () => {
         </div>
 
         {/* Form area */}
-        <div className="flex-1 flex items-center justify-center px-6">
-          <div className="w-full max-w-md">
+        <div className="flex-1 flex items-center justify-center px-4 py-8 sm:px-8">
+          <div className="w-full max-w-sm sm:max-w-md">
 
-            {/* Heading */}
             <motion.div
               custom={0} variants={fadeUp} initial="hidden" animate="visible"
               className="mb-8"
             >
               <h2
-                className="text-3xl mb-2"
+                className="text-2xl sm:text-3xl mb-2"
                 style={{ fontFamily: "'DM Serif Display', serif", color: 'hsl(var(--foreground))' }}
               >
                 Welcome back
               </h2>
-              <p style={{ color: 'hsl(var(--muted-foreground))' }}>
+              <p className="text-sm sm:text-base" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Sign in to your MediFind account
               </p>
             </motion.div>
 
-            {/* Error banner */}
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -8 }}
@@ -175,8 +174,7 @@ const LoginPage = () => {
               </motion.div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email */}
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible">
                 <label
                   className="block text-sm font-medium mb-2"
@@ -191,18 +189,18 @@ const LoginPage = () => {
                   onChange={handleChange}
                   required
                   placeholder="you@example.com"
+                  autoComplete="email"
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
                   style={{
                     backgroundColor: 'hsl(var(--secondary))',
                     color: 'hsl(var(--foreground))',
                     border: '1.5px solid hsl(var(--border))',
                   }}
-                  onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
-                  onBlur={(e) => e.target.style.borderColor = 'hsl(var(--border))'}
+                  onFocus={(e) => (e.target.style.borderColor = 'hsl(var(--primary))')}
+                  onBlur={(e) => (e.target.style.borderColor = 'hsl(var(--border))')}
                 />
               </motion.div>
 
-              {/* Password */}
               <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible">
                 <label
                   className="block text-sm font-medium mb-2"
@@ -218,36 +216,38 @@ const LoginPage = () => {
                     onChange={handleChange}
                     required
                     placeholder="••••••••"
+                    autoComplete="current-password"
                     className="w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all"
                     style={{
                       backgroundColor: 'hsl(var(--secondary))',
                       color: 'hsl(var(--foreground))',
                       border: '1.5px solid hsl(var(--border))',
                     }}
-                    onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
-                    onBlur={(e) => e.target.style.borderColor = 'hsl(var(--border))'}
+                    onFocus={(e) => (e.target.style.borderColor = 'hsl(var(--primary))')}
+                    onBlur={(e) => (e.target.style.borderColor = 'hsl(var(--border))')}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center nav-btn"
                     style={{ color: 'hsl(var(--muted-foreground))' }}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </motion.div>
 
-              {/* Submit */}
               <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 rounded-xl text-sm font-semibold transition-all mt-2"
+                  className="w-full py-3 rounded-xl text-sm font-semibold transition-all mt-1"
                   style={{
                     backgroundColor: 'hsl(var(--primary))',
                     color: 'hsl(var(--primary-foreground))',
                     opacity: loading ? 0.7 : 1,
+                    minHeight: '48px',
                   }}
                 >
                   {loading ? (
@@ -258,12 +258,13 @@ const LoginPage = () => {
                       </svg>
                       Signing in...
                     </span>
-                  ) : 'Sign in'}
+                  ) : (
+                    'Sign in'
+                  )}
                 </button>
               </motion.div>
             </form>
 
-            {/* Footer link */}
             <motion.p
               custom={4} variants={fadeUp} initial="hidden" animate="visible"
               className="text-center text-sm mt-6"
