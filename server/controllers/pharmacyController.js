@@ -73,7 +73,7 @@ export const getNearbyPharmacies = async (req, res) => {
 
     const radiusInMeters = parseFloat(radius) * 1000;
 
-    // Step 1: find verified pharmacies within radius
+    // Step 1: find active pharmacies within radius
     const nearbyPharmacies = await Pharmacy.find({
       isActive: true,
       location: {
@@ -91,17 +91,23 @@ export const getNearbyPharmacies = async (req, res) => {
       return res.status(200).json({ success: true, results: [] });
     }
 
-    // Step 2: search inventory by medicine name within those pharmacies
+    // Step 2: regex search — supports partial matching like "para" → "Paracetamol"
+    const regex = new RegExp(q, 'i');
+
     const pharmacyIds = nearbyPharmacies.map((p) => p._id);
 
     const inventoryRecords = await Inventory.find({
       pharmacy: { $in: pharmacyIds },
       inStock: true,
       quantity: { $gt: 0 },
-      $text: { $search: q },
+      $or: [
+        { medicineName: regex },
+        { brandNames: regex },
+        { saltComposition: regex },
+      ],
     }).select('pharmacy medicineName brandNames saltComposition quantity price unit lastUpdated');
 
-    // Step 3: group inventory by pharmacy
+    // Step 3: group by pharmacy
     const inventoryMap = {};
     inventoryRecords.forEach((inv) => {
       const pid = inv.pharmacy.toString();
@@ -109,7 +115,7 @@ export const getNearbyPharmacies = async (req, res) => {
       inventoryMap[pid].push(inv);
     });
 
-    // Step 4: merge and return only pharmacies that have matching stock
+    // Step 4: merge and return
     const results = nearbyPharmacies
       .filter((p) => inventoryMap[p._id.toString()])
       .map((p) => ({
