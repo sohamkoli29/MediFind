@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import passport from './config/passport.js';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import medicineRoutes from './routes/medicineRoutes.js';
@@ -16,7 +17,6 @@ connectDB();
 const app = express();
 const httpServer = createServer(app);
 
-// Socket.IO setup — we'll wire handlers in Phase 2
 export const io = new Server(httpServer, {
   cors: {
     origin: process.env.CLIENT_URL,
@@ -31,24 +31,23 @@ io.on('connection', (socket) => {
   });
 });
 
-// Middleware
 app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json());
+app.use(passport.initialize()); // ← add this
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/medicines', medicineRoutes);
 app.use('/api/pharmacies', pharmacyRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/admin', adminRoutes);
-// Health check
+
 app.get('/', (req, res) => res.json({ message: 'MediFind API running' }));
-// Global error handler
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: err.message });
 });
-// 404 handler
+
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });

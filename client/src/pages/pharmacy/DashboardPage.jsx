@@ -15,7 +15,7 @@ import useSocket from '../../hooks/useSocket';
 import toast, { Toaster } from 'react-hot-toast';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-
+import PharmacyRegisterModal from './PharmacyRegisterModal';
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: (i = 0) => ({
@@ -449,7 +449,7 @@ const DashboardPage = () => {
       {/* ── Modals ── */}
       <AnimatePresence>
         {showRegisterModal && (
-          <RegisterPharmacyModal
+          <PharmacyRegisterModal
             onClose={() => setShowRegisterModal(false)}
             onSuccess={(p) => { setPharmacy(p); setShowRegisterModal(false); fetchInventory(); }}
             theme={theme}
@@ -711,221 +711,7 @@ const ModalOverlay = ({ children, onClose }) => (
   </motion.div>
 );
 
-// ── Register Pharmacy Modal ───────────────────────────────────────────────────
-const RegisterPharmacyModal = ({ onClose, onSuccess }) => {
-  const [loading, setLoading] = useState(false);
-  const [locationLoading, setLocationLoading] = useState(false);
-  const [form, setForm] = useState({
-    name: '', licenceNumber: '', phone: '',
-    street: '', city: '', state: '', pincode: '',
-    open: '09:00', close: '21:00',
-    coordinates: null,
-  });
 
-  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
-
-  const detectLocation = () => {
-    setLocationLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setForm((p) => ({ ...p, coordinates: [pos.coords.longitude, pos.coords.latitude] }));
-        setLocationLoading(false);
-        toast.success('Location pinned!');
-      },
-      () => { toast.error('Could not detect location'); setLocationLoading(false); }
-    );
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.coordinates) { toast.error('Please pin your location first'); return; }
-    setLoading(true);
-    try {
-      const { data } = await api.post('/pharmacies/register', {
-        name: form.name, licenceNumber: form.licenceNumber, phone: form.phone,
-        address: { street: form.street, city: form.city, state: form.state, pincode: form.pincode },
-        coordinates: form.coordinates,
-        operatingHours: { open: form.open, close: form.close },
-      });
-      toast.success('Pharmacy registered!');
-      onSuccess(data.pharmacy);
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const inputStyle = {
-    backgroundColor: 'hsl(var(--secondary))',
-    color: 'hsl(var(--foreground))',
-    border: '1.5px solid hsl(var(--border))',
-  };
-
-  return (
-    <ModalOverlay onClose={onClose}>
-      <motion.div
-        variants={modalVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        className="w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl overflow-hidden modal-sheet"
-        style={{
-          backgroundColor: 'hsl(var(--card))',
-          border: '1px solid hsl(var(--border))',
-          maxHeight: '92dvh',
-          overflowY: 'auto',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Sheet handle on mobile */}
-        <div className="flex justify-center pt-3 sm:hidden">
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'hsl(var(--border))' }} />
-        </div>
-
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4"
-          style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-          <div>
-            <h2 className="font-bold text-base sm:text-lg" style={{ color: 'hsl(var(--foreground))' }}>
-              Register Pharmacy
-            </h2>
-            <p className="text-xs sm:text-sm mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Set up your pharmacy profile
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center nav-btn"
-            style={{ backgroundColor: 'hsl(var(--secondary))' }}
-          >
-            <X className="w-4 h-4" style={{ color: 'hsl(var(--muted-foreground))' }} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="px-5 sm:px-6 py-5 space-y-4">
-          <div>
-            <label className="block text-xs sm:text-sm font-medium mb-1.5" style={{ color: 'hsl(var(--foreground))' }}>
-              Pharmacy Name
-            </label>
-            <input name="name" value={form.name} onChange={handleChange} required
-              placeholder="Apollo Pharmacy"
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-              style={inputStyle}
-              onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
-              onBlur={(e) => e.target.style.borderColor = 'hsl(var(--border))'}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { name: 'licenceNumber', label: 'Licence Number', placeholder: 'MH-2024-001' },
-              { name: 'phone', label: 'Phone', placeholder: '9876543210' },
-            ].map((f) => (
-              <div key={f.name}>
-                <label className="block text-xs sm:text-sm font-medium mb-1.5" style={{ color: 'hsl(var(--foreground))' }}>
-                  {f.label}
-                </label>
-                <input name={f.name} value={form[f.name]} onChange={handleChange} required
-                  placeholder={f.placeholder}
-                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-                  style={inputStyle}
-                  onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
-                  onBlur={(e) => e.target.style.borderColor = 'hsl(var(--border))'}
-                />
-              </div>
-            ))}
-          </div>
-
-          <div>
-            <label className="block text-xs sm:text-sm font-medium mb-1.5" style={{ color: 'hsl(var(--foreground))' }}>
-              Street Address
-            </label>
-            <input name="street" value={form.street} onChange={handleChange} placeholder="College Road"
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-              style={inputStyle}
-              onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
-              onBlur={(e) => e.target.style.borderColor = 'hsl(var(--border))'}
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            {[
-              { name: 'city', placeholder: 'Nashik' },
-              { name: 'state', placeholder: 'Maharashtra' },
-              { name: 'pincode', placeholder: '422005' },
-            ].map((f) => (
-              <div key={f.name}>
-                <label className="block text-xs font-medium mb-1.5 capitalize" style={{ color: 'hsl(var(--foreground))' }}>
-                  {f.name}
-                </label>
-                <input name={f.name} value={form[f.name]} onChange={handleChange}
-                  placeholder={f.placeholder}
-                  className="w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm outline-none"
-                  style={inputStyle}
-                  onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
-                  onBlur={(e) => e.target.style.borderColor = 'hsl(var(--border))'}
-                />
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { name: 'open', label: 'Opening Time' },
-              { name: 'close', label: 'Closing Time' },
-            ].map((f) => (
-              <div key={f.name}>
-                <label className="block text-xs sm:text-sm font-medium mb-1.5" style={{ color: 'hsl(var(--foreground))' }}>
-                  {f.label}
-                </label>
-                <input type="time" name={f.name} value={form[f.name]} onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-                  style={inputStyle}
-                  onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
-                  onBlur={(e) => e.target.style.borderColor = 'hsl(var(--border))'}
-                />
-              </div>
-            ))}
-          </div>
-
-          <div>
-            <label className="block text-xs sm:text-sm font-medium mb-1.5" style={{ color: 'hsl(var(--foreground))' }}>
-              Pharmacy Location
-            </label>
-            <button type="button" onClick={detectLocation} disabled={locationLoading}
-              className="w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2"
-              style={{
-                backgroundColor: form.coordinates ? 'hsl(var(--primary) / 0.1)' : 'hsl(var(--secondary))',
-                color: form.coordinates ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-                border: '1.5px solid hsl(var(--border))',
-                minHeight: '44px',
-              }}
-            >
-              {locationLoading ? <Loader2 className="w-4 h-4 animate-spin" />
-                : form.coordinates ? <Check className="w-4 h-4" />
-                : <Navigation className="w-4 h-4" />}
-              {locationLoading ? 'Detecting...'
-                : form.coordinates ? `Pinned (${form.coordinates[1].toFixed(3)}, ${form.coordinates[0].toFixed(3)})`
-                : 'Pin my current location'}
-            </button>
-          </div>
-
-          <button type="submit" disabled={loading}
-            className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
-            style={{
-              backgroundColor: 'hsl(var(--primary))',
-              color: 'hsl(var(--primary-foreground))',
-              opacity: loading ? 0.7 : 1,
-              minHeight: '48px',
-            }}
-          >
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Registering...</> : 'Register Pharmacy'}
-          </button>
-        </form>
-      </motion.div>
-    </ModalOverlay>
-  );
-};
 
 // ── Inventory Modal ───────────────────────────────────────────────────────────
 const InventoryModal = ({ editingItem, onClose, onSuccess }) => {

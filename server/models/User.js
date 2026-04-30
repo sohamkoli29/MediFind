@@ -17,15 +17,23 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
       minlength: 6,
-      select: false,       // never returned in queries by default
+      select: false,
+      // NOT required — OAuth users won't have a password
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // allows multiple null values
+    },
+    avatar: {
+      type: String,
     },
     role: {
-  type: String,
-  enum: ['patient', 'pharmacy_staff'],
-  default: 'patient',
-},
+      type: String,
+      enum: ['patient', 'pharmacy_staff'],
+      default: 'patient',
+    },
     phone: {
       type: String,
       trim: true,
@@ -38,14 +46,14 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash password before saving
+// Hash password before saving (skip if no password — OAuth users)
 userSchema.pre('save', async function () {
-  if (!this.isModified('password')) return;
+  if (!this.isModified('password') || !this.password) return;
   this.password = await bcrypt.hash(this.password, 12);
 });
 
-// Compare password method
 userSchema.methods.matchPassword = async function (enteredPassword) {
+  if (!this.password) return false; // OAuth-only account
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
