@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader2, Check, MapPin, Search as SearchIcon } from 'lucide-react';
-import api from '../../services/api';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { X, Loader2, Check, MapPin, Search as SearchIcon, AlertCircle } from 'lucide-react';
+import axios from 'axios';
+import { switchToPharmacy } from '../../features/auth/authSlice';
 import toast from 'react-hot-toast';
 
 const modalVariants = {
@@ -12,14 +15,11 @@ const modalVariants = {
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-// ── Tiny hook: load Google Maps script once ───────────────────────────────────
 const useMapsScript = () => {
   const [ready, setReady] = useState(false);
-
   useEffect(() => {
     if (window.google?.maps) { setReady(true); return; }
     if (document.getElementById('gmap-script')) {
-      // Script already injected — wait for it
       const interval = setInterval(() => {
         if (window.google?.maps) { setReady(true); clearInterval(interval); }
       }, 100);
@@ -32,21 +32,20 @@ const useMapsScript = () => {
     script.onload = () => setReady(true);
     document.head.appendChild(script);
   }, []);
-
   return ready;
 };
 
 const PharmacyRegisterModal = ({ onClose, onSuccess }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const mapsReady = useMapsScript();
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markerRef = useRef(null);
-  const autocompleteRef = useRef(null);
   const searchInputRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
-  const [mapTab, setMapTab] = useState('search'); // 'search' | 'current'
-  const [pinnedCoords, setPinnedCoords] = useState(null); // { lat, lng }
+  const [pinnedCoords, setPinnedCoords] = useState(null);
   const [gettingLocation, setGettingLocation] = useState(false);
 
   const [form, setForm] = useState({
@@ -61,43 +60,31 @@ const PharmacyRegisterModal = ({ onClose, onSuccess }) => {
     border: '1.5px solid hsl(var(--border))',
   };
 
-  // ── Init map ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!mapsReady || !mapRef.current || mapInstanceRef.current) return;
 
-    const defaultCenter = { lat: 20.5937, lng: 78.9629 }; // India center
-
     const map = new window.google.maps.Map(mapRef.current, {
-      center: defaultCenter,
+      center: { lat: 20.5937, lng: 78.9629 },
       zoom: 5,
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: false,
-      styles: [
-        { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-      ],
     });
     mapInstanceRef.current = map;
 
-    // Click to pin
     map.addListener('click', (e) => {
       placeMarker({ lat: e.latLng.lat(), lng: e.latLng.lng() }, map);
     });
 
-    // Autocomplete on search input
     if (searchInputRef.current) {
       const ac = new window.google.maps.places.Autocomplete(searchInputRef.current, {
         types: ['establishment', 'geocode'],
         componentRestrictions: { country: 'in' },
       });
-      autocompleteRef.current = ac;
       ac.addListener('place_changed', () => {
         const place = ac.getPlace();
         if (!place.geometry) return;
-        const loc = {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-        };
+        const loc = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
         map.setCenter(loc);
         map.setZoom(16);
         placeMarker(loc, map);
@@ -111,7 +98,6 @@ const PharmacyRegisterModal = ({ onClose, onSuccess }) => {
       position: coords,
       map,
       animation: window.google.maps.Animation.DROP,
-      title: 'Pharmacy location',
     });
     setPinnedCoords(coords);
   };
@@ -126,35 +112,57 @@ const PharmacyRegisterModal = ({ onClose, onSuccess }) => {
         mapInstanceRef.current?.setZoom(16);
         placeMarker(coords, mapInstanceRef.current);
         setGettingLocation(false);
-        toast.success('Location pinned!');
       },
-      () => { toast.error('Could not detect location'); setGettingLocation(false); }
+      () => { toast.error('Could not get location'); setGettingLocation(false); }
     );
   };
 
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!pinnedCoords) { toast.error('Please pin your pharmacy location on the map'); return; }
-    setLoading(true);
-    try {
-      const { data } = await api.post('/pharmacies/register', {
+  e.preventDefault();
+  if (!pinnedCoords) { toast.error('Please pin your pharmacy location on the map'); return; }
+
+  setLoading(true);
+
+  try {
+    toast.loading('Upgrading your account...', { id: 'switch' });
+    const switchResult = await dispatch(switchToPharmacy()).unwrap();
+    const newToken = switchResult.token;
+    toast.success('Account upgraded!', { id: 'switch' });
+
+    toast.loading('Registering pharmacy...', { id: 'register' });
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/pharmacies/register`,
+      {
         name: form.name,
         licenceNumber: form.licenceNumber,
         phone: form.phone,
         address: { street: form.street, city: form.city, state: form.state, pincode: form.pincode },
         coordinates: [pinnedCoords.lng, pinnedCoords.lat],
         operatingHours: { open: form.open, close: form.close },
-      });
-      toast.success('Pharmacy registered!');
-      onSuccess(data.pharmacy);
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${newToken}`,
+        },
+      }
+    );
+    toast.success('Pharmacy registered!', { id: 'register' });
+
+    // Hard redirect — re-initialises the entire app with the new token/role in localStorage
+    // This avoids the stale Redux state issue where user.role is still 'patient'
+    window.location.href = '/pharmacy';
+
+  } catch (err) {
+    toast.dismiss('switch');
+    toast.dismiss('register');
+    const msg = err?.response?.data?.message || err?.message || 'Something went wrong';
+    toast.error(msg);
+    setLoading(false); // only reset on error — on success we're navigating away
+  }
+};
 
   return (
     <motion.div
@@ -194,7 +202,7 @@ const PharmacyRegisterModal = ({ onClose, onSuccess }) => {
               Register Pharmacy
             </h2>
             <p className="text-xs sm:text-sm mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Set up your pharmacy profile
+              Your account will be upgraded to pharmacy staff
             </p>
           </div>
           <button
@@ -206,9 +214,25 @@ const PharmacyRegisterModal = ({ onClose, onSuccess }) => {
           </button>
         </div>
 
+        {/* Info banner */}
+        <div
+          className="mx-5 sm:mx-6 mt-4 flex items-start gap-3 p-3 rounded-xl text-xs sm:text-sm"
+          style={{
+            backgroundColor: 'hsl(var(--primary) / 0.08)',
+            border: '1px solid hsl(var(--primary) / 0.2)',
+            color: 'hsl(var(--primary))',
+          }}
+        >
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>
+            Registering a pharmacy will switch your account role to <strong>Pharmacy Staff</strong>.
+            You'll be redirected to the pharmacy dashboard automatically.
+          </span>
+        </div>
+
         <form onSubmit={handleSubmit} className="px-5 sm:px-6 py-5 space-y-4">
 
-          {/* Pharmacy Name */}
+          {/* Name */}
           <div>
             <label className="block text-xs sm:text-sm font-medium mb-1.5" style={{ color: 'hsl(var(--foreground))' }}>
               Pharmacy Name *
@@ -277,7 +301,7 @@ const PharmacyRegisterModal = ({ onClose, onSuccess }) => {
             ))}
           </div>
 
-          {/* Operating Hours */}
+          {/* Hours */}
           <div className="grid grid-cols-2 gap-3">
             {[
               { name: 'open', label: 'Opening Time' },
@@ -297,13 +321,12 @@ const PharmacyRegisterModal = ({ onClose, onSuccess }) => {
             ))}
           </div>
 
-          {/* ── Location Picker ── */}
+          {/* ── Map Location Picker ── */}
           <div>
             <label className="block text-xs sm:text-sm font-medium mb-2" style={{ color: 'hsl(var(--foreground))' }}>
               Pharmacy Location *
             </label>
 
-            {/* Status chip */}
             {pinnedCoords && (
               <div
                 className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3 text-xs font-medium"
@@ -314,13 +337,10 @@ const PharmacyRegisterModal = ({ onClose, onSuccess }) => {
               </div>
             )}
 
-            {/* Search bar above map */}
             {mapsReady && (
               <div className="relative mb-2">
-                <SearchIcon
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-                  style={{ color: 'hsl(var(--muted-foreground))' }}
-                />
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+                  style={{ color: 'hsl(var(--muted-foreground))' }} />
                 <input
                   ref={searchInputRef}
                   type="text"
@@ -333,31 +353,24 @@ const PharmacyRegisterModal = ({ onClose, onSuccess }) => {
               </div>
             )}
 
-            {/* Map */}
             <div
               className="relative rounded-xl overflow-hidden"
               style={{ border: pinnedCoords ? '2px solid hsl(var(--primary))' : '1.5px solid hsl(var(--border))' }}
             >
               {!mapsReady && (
-                <div
-                  className="flex items-center justify-center"
-                  style={{ height: '280px', backgroundColor: 'hsl(var(--secondary))' }}
-                >
+                <div className="flex items-center justify-center"
+                  style={{ height: '260px', backgroundColor: 'hsl(var(--secondary))' }}>
                   <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'hsl(var(--primary))' }} />
                 </div>
               )}
-              <div
-                ref={mapRef}
-                style={{ height: '280px', display: mapsReady ? 'block' : 'none' }}
-              />
+              <div ref={mapRef} style={{ height: '260px', display: mapsReady ? 'block' : 'none' }} />
 
-              {/* Use current location button — overlaid on map */}
               {mapsReady && (
                 <button
                   type="button"
                   onClick={handleUseCurrentLocation}
                   disabled={gettingLocation}
-                  className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold shadow-md transition-all"
+                  className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold shadow-md"
                   style={{
                     backgroundColor: 'hsl(var(--card))',
                     color: 'hsl(var(--foreground))',
@@ -375,7 +388,7 @@ const PharmacyRegisterModal = ({ onClose, onSuccess }) => {
             </div>
 
             <p className="text-xs mt-1.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Search for an address above, click anywhere on the map, or use current location to pin your pharmacy.
+              Search, click the map, or use current location to pin your pharmacy.
             </p>
           </div>
 
@@ -392,7 +405,7 @@ const PharmacyRegisterModal = ({ onClose, onSuccess }) => {
             }}
           >
             {loading
-              ? <><Loader2 className="w-4 h-4 animate-spin" /> Registering...</>
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
               : 'Register Pharmacy'
             }
           </button>

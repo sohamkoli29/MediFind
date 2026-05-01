@@ -62,7 +62,6 @@ export const getPharmacyInventory = async (req, res) => {
   }
 };
 
-// Core geospatial search — now searches inventory text index directly
 export const getNearbyPharmacies = async (req, res) => {
   try {
     const { q, lng, lat, radius = 5 } = req.query;
@@ -71,9 +70,13 @@ export const getNearbyPharmacies = async (req, res) => {
       return res.status(400).json({ message: 'q, lng, and lat are required' });
     }
 
+    // Escape special regex characters from user input
+    const escaped = q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escaped, 'i'); // case-insensitive partial match
+
     const radiusInMeters = parseFloat(radius) * 1000;
 
-    // Step 1: find verified pharmacies within radius
+    // Step 1: find active pharmacies within radius
     const nearbyPharmacies = await Pharmacy.find({
       isActive: true,
       location: {
@@ -91,17 +94,22 @@ export const getNearbyPharmacies = async (req, res) => {
       return res.status(200).json({ success: true, results: [] });
     }
 
-    // Step 2: search inventory by medicine name within those pharmacies
     const pharmacyIds = nearbyPharmacies.map((p) => p._id);
 
+    // Step 2: regex search across medicineName, brandNames, saltComposition
+    // This supports partial matches: "para" → "Paracetamol", "croc" → "Crocin"
     const inventoryRecords = await Inventory.find({
       pharmacy: { $in: pharmacyIds },
       inStock: true,
       quantity: { $gt: 0 },
-      $text: { $search: q },
+      $or: [
+        { medicineName: regex },
+        { brandNames: regex },
+        { saltComposition: regex },
+      ],
     }).select('pharmacy medicineName brandNames saltComposition quantity price unit lastUpdated');
 
-    // Step 3: group inventory by pharmacy
+    // Step 3: group by pharmacy
     const inventoryMap = {};
     inventoryRecords.forEach((inv) => {
       const pid = inv.pharmacy.toString();
@@ -109,7 +117,7 @@ export const getNearbyPharmacies = async (req, res) => {
       inventoryMap[pid].push(inv);
     });
 
-    // Step 4: merge and return only pharmacies that have matching stock
+    // Step 4: merge and return
     const results = nearbyPharmacies
       .filter((p) => inventoryMap[p._id.toString()])
       .map((p) => ({
