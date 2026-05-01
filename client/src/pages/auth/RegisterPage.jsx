@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Pill, Sun, Moon, AlertCircle, User, Store } from 'lucide-react';
 import { registerUser, clearError } from '../../features/auth/authSlice';
 import useTheme from '../../hooks/useTheme';
-
+import GoogleAuthButton from '../oauth/GoogleAuthButton';
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: (i = 0) => ({
@@ -389,7 +389,14 @@ const RegisterPage = () => {
                 </button>
               </motion.div>
             </form>
-
+                  <motion.div custom={7} variants={fadeUp} initial="hidden" animate="visible">
+  <div className="flex items-center gap-3 my-4">
+    <div className="flex-1 h-px" style={{ backgroundColor: 'hsl(var(--border))' }} />
+    <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>or</span>
+    <div className="flex-1 h-px" style={{ backgroundColor: 'hsl(var(--border))' }} />
+  </div>
+  <GoogleAuthButton label="Sign up with Google" disabled={loading} />
+</motion.div>
             <motion.p
               custom={7} variants={fadeUp} initial="hidden" animate="visible"
               className="text-center text-sm mt-5"

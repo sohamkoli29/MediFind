@@ -1,0 +1,73 @@
+medicineName,brandNames,saltComposition,category,quantity,price,unit,lowStockThreshold
+Ibuprofen,Brufen|Combiflam|Advil,Ibuprofen 400mg,analgesic,150,35,strip,20
+Aspirin,Ecosprin|Disprin|Loprin,Aspirin 75mg,cardiovascular,200,18,strip,25
+Diclofenac,Voveran|Voltaren|Reactin,Diclofenac 50mg,analgesic,90,45,strip,12
+Tramadol,Contramal|Ultram|Tramazac,Tramadol 50mg,analgesic,40,110,strip,8
+Pantoprazole,Pan|Pantocid|Protonix,Pantoprazole 40mg,other,120,55,strip,15
+Ranitidine,Rantac|Zantac|Aciloc,Ranitidine 150mg,other,85,22,strip,10
+Domperidone,Domstal|Motilium|Vomistop,Domperidone 10mg,other,110,28,strip,15
+Ondansetron,Emeset|Zofran|Ondem,Ondansetron 4mg,other,70,65,strip,10
+Loperamide,Lopamide|Imodium|Eldoper,Loperamide 2mg,other,60,30,strip,8
+Ciprofloxacin,Cifran|Ciplox|Ciprobid,Ciprofloxacin 500mg,antibiotic,55,90,strip,8
+Doxycycline,Doxt|Vibramycin|Biodoxi,Doxycycline 100mg,antibiotic,48,75,strip,8
+Cefixime,Zifi|Taxim-O|Cefi,Cefixime 200mg,antibiotic,52,145,strip,8
+Cloxacillin,Bioclox|Clox|Synthopen,Cloxacillin 500mg,antibiotic,38,65,strip,6
+Clarithromycin,Claribid|Klacid|Biaxin,Clarithromycin 500mg,antibiotic,35,180,strip,5
+Metronidazole,Flagyl|Metrogyl|Aristogyl,Metronidazole 400mg,antibiotic,95,20,strip,12
+Nitrofurantoin,Macrobid|Furadantin|Uvamin,Nitrofurantoin 100mg,antibiotic,30,85,strip,5
+Levofloxacin,Levoflox|Tavanic|Levobact,Levofloxacin 500mg,antibiotic,42,160,strip,6
+Atorvastatin,Atorva|Lipitor|Storvas,Atorvastatin 10mg,cardiovascular,130,55,strip,15
+Rosuvastatin,Rozavel|Crestor|Rosuvas,Rosuvastatin 10mg,cardiovascular,110,75,strip,12
+Amlodipine,Amlodac|Norvasc|Amlong,Amlodipine 5mg,cardiovascular,140,30,strip,18
+Enalapril,Envas|Vasotec|Enam,Enalapril 5mg,cardiovascular,85,28,strip,10
+Losartan,Losar|Cozaar|Repace,Losartan 50mg,cardiovascular,95,42,strip,12
+Telmisartan,Telma|Micardis|Telsartan,Telmisartan 40mg,cardiovascular,100,65,strip,12
+Metoprolol,Metolar|Lopressor|Seloken,Metoprolol 25mg,cardiovascular,88,32,strip,10
+Atenolol,Aten|Tenormin|Betacard,Atenolol 50mg,cardiovascular,92,22,strip,12
+Furosemide,Lasix|Frusemide|Frusenex,Furosemide 40mg,cardiovascular,65,18,strip,8
+Digoxin,Lanoxin|Digocin|Cardoxin,Digoxin 0.25mg,cardiovascular,40,35,strip,6
+Clopidogrel,Clopivas|Plavix|Deplatt,Clopidogrel 75mg,cardiovascular,75,85,strip,10
+Glipizide,Glynase|Glucotrol|Dibizide,Glipizide 5mg,diabetes,70,38,strip,10
+Glimepiride,Amaryl|Glimpid|Glimy,Glimepiride 2mg,diabetes,90,45,strip,12
+Sitagliptin,Januvia|Zita|Istavel,Sitagliptin 100mg,diabetes,45,280,strip,6
+Voglibose,Volix|Volibo|Voglib,Voglibose 0.3mg,diabetes,60,55,strip,8
+Insulin Glargine,Lantus|Basalog|Glaritus,Insulin Glargine 100IU,diabetes,25,850,vial,3
+Pioglitazone,Pioz|Actos|Piozone,Pioglitazone 15mg,diabetes,55,62,strip,8
+Salbutamol,Asthalin|Ventolin|Salbair,Salbutamol 2mg,respiratory,180,18,strip,20
+Montelukast,Montair|Singulair|Romilast,Montelukast 10mg,respiratory,115,85,strip,15
+Budesonide,Budecort|Pulmicort|Budenase,Budesonide 200mcg,respiratory,35,320,bottle,4
+Theophylline,Deriphyllin|Theoday|Uniphyl,Theophylline 100mg,respiratory,60,28,strip,8
+Levocetrizine,Levocet|Xyzal|Vozet,Levocetrizine 5mg,other,160,20,strip,20
+Fexofenadine,Allegra|Telfast|Fexo,Fexofenadine 120mg,other,125,42,strip,15
+Loratadine,Clarityne|Lorfast|Alavert,Loratadine 10mg,other,140,25,strip,18
+Hydroxyzine,Atarax|Vistaril|Hxzine,Hydroxyzine 25mg,other,50,35,strip,8
+Fluconazole,Flucos|Diflucan|Syscan,Fluconazole 150mg,antifungal,80,55,strip,10
+Clotrimazole,Canesten|Candid|Clotrin,Clotrimazole 1%,antifungal,65,85,tube,8
+Terbinafine,Terbicip|Lamisil|Zimig,Terbinafine 250mg,antifungal,45,120,strip,6
+Ketoconazole,Nizoral|Ketocon|Fungicide,Ketoconazole 200mg,antifungal,38,75,strip,5
+Itraconazole,Itrasys|Sporanox|Canditral,Itraconazole 100mg,antifungal,35,145,strip,5
+Acyclovir,Zovirax|Acivir|Herpex,Acyclovir 400mg,antiviral,55,95,strip,8
+Oseltamivir,Tamiflu|Antiflu|Fluvir,Oseltamivir 75mg,antiviral,28,350,strip,4
+Tenofovir,Tavin|Viread|Tenvir,Tenofovir 300mg,antiviral,20,180,strip,3
+Vitamin B12,Methylcobal|Cobadex|Neurobion,Methylcobalamin 500mcg,vitamin,250,32,strip,30
+Vitamin C,Limcee|Celin|Ester-C,Ascorbic Acid 500mg,vitamin,300,12,strip,35
+Vitamin B Complex,Becosules|Polybion|Beplex,Vitamin B Complex,vitamin,220,28,strip,25
+Calcium Carbonate,Shelcal|Calcimax|Oscal,Calcium Carbonate 500mg,vitamin,175,45,strip,20
+Folic Acid,Folvite|Folart|Folirich,Folic Acid 5mg,vitamin,190,8,strip,25
+Iron Sucrose,Monofer|Venofer|Ferric,Iron Sucrose 100mg,vitamin,30,280,vial,4
+Zinc Sulphate,Zincovit|Zinconia|Zintake,Zinc Sulphate 20mg,vitamin,145,18,strip,18
+Magnesium Oxide,Magnex|Slowmag|Magplex,Magnesium Oxide 400mg,vitamin,90,35,strip,12
+Prednisolone,Wysolone|Omnacortil|Deltacortril,Prednisolone 10mg,other,75,22,strip,10
+Dexamethasone,Decadron|Dexona|Dexacort,Dexamethasone 0.5mg,other,65,15,strip,8
+Methylprednisolone,Medrol|Solu-Medrol|Methpred,Methylprednisolone 4mg,other,42,95,strip,6
+Alprazolam,Alprax|Xanax|Restyl,Alprazolam 0.25mg,other,35,18,strip,5
+Clonazepam,Clonotril|Klonopin|Rivotril,Clonazepam 0.5mg,other,30,22,strip,5
+Sertraline,Sertima|Zoloft|Daxid,Sertraline 50mg,other,48,65,strip,6
+Amitriptyline,Tryptomer|Elavil|Amitril,Amitriptyline 10mg,other,55,18,strip,8
+Gabapentin,Gabantin|Neurontin|Gabapax,Gabapentin 300mg,other,68,75,strip,8
+Pregabalin,Lyrica|Pregalin|Pregeb,Pregabalin 75mg,other,72,95,strip,10
+Pantoprazole+Domperidone,Pantodac DSR|Pan D|Pantop D,Pantoprazole 40mg + Domperidone 30mg,other,130,68,strip,15
+Paracetamol+Ibuprofen,Combiflam Plus|Ibugesic Plus,Paracetamol 325mg + Ibuprofen 400mg,analgesic,160,28,strip,20
+Amoxicillin+Clavulanate,Augmentin|Clavam|Moxclav,Amoxicillin 500mg + Clavulanic Acid 125mg,antibiotic,65,185,strip,8
+Atorvastatin+Amlodipine,Amlodac AT|Caduet|Amlovas AT,Atorvastatin 10mg + Amlodipine 5mg,cardiovascular,80,95,strip,10
+Metformin+Glimepiride,Glimy M|Amaryl M|Glycomet GP,Metformin 500mg + Glimepiride 1mg,diabetes,85,55,strip,10

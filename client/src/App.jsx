@@ -8,6 +8,7 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import SearchPage from './pages/patient/SearchPage';
 import DashboardPage from './pages/pharmacy/DashboardPage';
+import OAuthCallbackPage from './pages/oauth/OAuthCallbackPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 const AnimatedRoutes = () => {
@@ -18,6 +19,7 @@ const AnimatedRoutes = () => {
       <Routes location={location} key={location.pathname}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
         <Route
           path="/"
           element={
@@ -42,11 +44,11 @@ const AnimatedRoutes = () => {
 
 function App() {
   const dispatch = useDispatch();
-  const { token } = useSelector((state) => state.auth);
+  const { token, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (token) dispatch(fetchMe());
-  }, []);
+    if (token && !user) dispatch(fetchMe());
+  }, [token]);
 
   return (
     <BrowserRouter>

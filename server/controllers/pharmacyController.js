@@ -62,7 +62,6 @@ export const getPharmacyInventory = async (req, res) => {
   }
 };
 
-// Core geospatial search — now searches inventory text index directly
 export const getNearbyPharmacies = async (req, res) => {
   try {
     const { q, lng, lat, radius = 5 } = req.query;
@@ -70,6 +69,10 @@ export const getNearbyPharmacies = async (req, res) => {
     if (!q || !lng || !lat) {
       return res.status(400).json({ message: 'q, lng, and lat are required' });
     }
+
+    // Escape special regex characters from user input
+    const escaped = q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escaped, 'i'); // partial, case-insensitive match
 
     const radiusInMeters = parseFloat(radius) * 1000;
 
@@ -91,11 +94,10 @@ export const getNearbyPharmacies = async (req, res) => {
       return res.status(200).json({ success: true, results: [] });
     }
 
-    // Step 2: regex search — supports partial matching like "para" → "Paracetamol"
-    const regex = new RegExp(q, 'i');
-
     const pharmacyIds = nearbyPharmacies.map((p) => p._id);
 
+    // Step 2: regex across medicineName, brandNames, saltComposition
+    // supports partial: "para" → Paracetamol, "croc" → Crocin, "500mg" → salts
     const inventoryRecords = await Inventory.find({
       pharmacy: { $in: pharmacyIds },
       inStock: true,
@@ -115,7 +117,7 @@ export const getNearbyPharmacies = async (req, res) => {
       inventoryMap[pid].push(inv);
     });
 
-    // Step 4: merge and return
+    // Step 4: merge and return only pharmacies that have matching stock
     const results = nearbyPharmacies
       .filter((p) => inventoryMap[p._id.toString()])
       .map((p) => ({

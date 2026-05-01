@@ -1,8 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
-// ─── Async Thunks ─────────────────────────────────────────────────────────────
-
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
@@ -41,14 +39,26 @@ export const fetchMe = createAsyncThunk(
   }
 );
 
-// ─── Slice ────────────────────────────────────────────────────────────────────
+export const switchToPharmacy = createAsyncThunk(
+  'auth/switchToPharmacy',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post('/auth/switch-to-pharmacy');
+      // Store the new token (has pharmacy_staff role encoded)
+      localStorage.setItem('token', data.token);
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Role switch failed');
+    }
+  }
+);
 
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null,
     token: localStorage.getItem('token') || null,
-    pharmacy: null,       // for pharmacy_staff — their pharmacy info
+    pharmacy: null,
     loading: false,
     error: null,
   },
@@ -66,10 +76,7 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     // Register
     builder
-      .addCase(registerUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(registerUser.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
@@ -82,10 +89,7 @@ const authSlice = createSlice({
 
     // Login
     builder
-      .addCase(loginUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(loginUser.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
@@ -99,18 +103,29 @@ const authSlice = createSlice({
 
     // Fetch Me
     builder
-      .addCase(fetchMe.pending, (state) => {
-        state.loading = true;
-      })
+      .addCase(fetchMe.pending, (state) => { state.loading = true; })
       .addCase(fetchMe.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
       })
-      .addCase(fetchMe.rejected, (state, action) => {
+      .addCase(fetchMe.rejected, (state) => {
         state.loading = false;
         state.user = null;
         state.token = null;
         localStorage.removeItem('token');
+      });
+
+    // Switch to pharmacy_staff
+    builder
+      .addCase(switchToPharmacy.pending, (state) => { state.loading = true; state.error = null; })
+      .addCase(switchToPharmacy.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+      })
+      .addCase(switchToPharmacy.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
